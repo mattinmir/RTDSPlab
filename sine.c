@@ -5,7 +5,7 @@
  				      EE 3.19: Real Time Digital Signal Processing
 					       Dr Paul Mitcheson and Daniel Harvey
 
-				        LAB 2: Learning C and Sinewave Generation 
+				        LAB 2: Learning C and Sinewave Genestep_sizen 
 
  				             ********* S I N E . C **********
 
@@ -23,7 +23,7 @@
  */
 /**************************** Pre-processor statements ******************************/
 
-//  Included so program can make use of DSP/BIOS configuration tool.  
+//  Included so program can make use of DSP/BIOS configustep_sizen tool.  
 #include "dsp_bios_cfg.h"
 
 /* The file dsk6713.h must be included in every program that uses the BSL.  This 
@@ -45,9 +45,9 @@
 // Singegen lookup table size
 #define SINE_TABLE_SIZE 256 
 
-/******************************* Global declarations ********************************/
+/******************************* Global declastep_sizens ********************************/
 
-/* Audio port configuration settings: these values set registers in the AIC23 audio 
+/* Audio port configustep_sizen settings: these values set registers in the AIC23 audio 
    interface to configure it. See TI doc SLWS106D 3-3 to 3-10 for more info. */
 DSK6713_AIC23_Config Config = { \
 			 /**********************************************************************/
@@ -75,10 +75,11 @@ DSK6713_AIC23_CodecHandle H_Codec;
 int sampling_freq = 8000;
 
 //Iterator used to iterate through sine table
-int iterator = 0;
+float iterator = 0;
 
 //A counter that will alter the frequency at which iterator is incremented
 int counter = 0;
+
 
 
 
@@ -137,10 +138,8 @@ void main()
         
 		// Set the sampling frequency. This function updates the frequency only if it 
 		// has changed. Frequency set must be one of the supported sampling freq.
-		set_samp_freq(&sampling_freq, Config, &H_Codec);
-	
+		set_samp_freq(&sampling_freq, Config, &H_Codec);	
 	}
-
 }
 
 /******************************* init_hardware() ************************************/
@@ -166,52 +165,24 @@ void init_hardware()
 /********************************** sinegen() ***************************************/   
 float sinegen(void)
 {
-/*  This code produces a fixed sine of 1KHZ (if the sampling frequency is 8KHZ)
-    using a digital filter.
- 	You will need to re-write this function to produce a sine of variable frequency
- 	using a look up table instead of a filter.*/
-	
-	// temporary variable used to output values from function
-	
-	/*float wave;	
-	
-	// represets the filter coeficients (square root of 2 and 1/square root of 2)
-	float a0 = 1.4142;
-	float b0 = 0.7071;
 
-	y[0] = a0 * y[1] - y[2] + b0 * x[0]; // Difference equation
-
-	y[2] = y[1]; // move values through buffer
-	y[1] = y[0];
-
-	x[0] = 0; // reset input to zero (to create the impulse) 
-
-	wave = y[0];
-			   
-    return(wave); 
-    */
-
-	// The counter controls when the iterator can increment  
-	// It can only do so once the counter has reached its limit 
-	// The limit is set based on the 
+	// Controls output frequency by controlling  rate at which samples are chosen from 
+	// lookup table. 
+	// Iterating through the lookup table with larger step size forms higher frequency output 
+	// and vice versa. 
 	
-	float ratio;
-	ratio = (sine_freq/(float)sampling_freq)*SINE_TABLE_SIZE;
+	float step_size;
+	step_size = (sine_freq/(float)sampling_freq)*SINE_TABLE_SIZE;
 	
-    if(iterator < (SINE_TABLE_SIZE - ratio))
+	iterator += step_size;
+	
+    if(iterator >= (SINE_TABLE_SIZE))
     {
-    	if(round(ratio) != ratio)
-    	{
-    		return (table[(int)ceil(ratio)]-table[(int)floor(ratio)])*(ratio-floor(ratio))+floor(ratio);
-    	}
-    	else
-       		iterator += ratio;   
+       	iterator -= SINE_TABLE_SIZE;   
     }
-    else
-    	iterator = 0;	
-	
-	
-    return table[iterator];  
+
+	// Typecast to int as index needs to be int type
+    return table[(int)iterator];  
  
 }
 
