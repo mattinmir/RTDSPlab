@@ -74,6 +74,13 @@ DSK6713_AIC23_CodecHandle H_Codec;
 32000, 44100 (CD standard), 48000 or 96000  */ 
 int sampling_freq = 8000;
 
+//Iterator used to iterate through sine table
+int iterator = 0;
+
+//A counter that will alter the frequency at which iterator is incremented
+int counter = 0;
+
+
 
 // Array of data used by sinegen to generate sine. These are the initial values.                        
 float y[3] = {0,0,0};
@@ -114,7 +121,7 @@ void main()
 	
     // Loop endlessley generating a sine wave 
    while(1)
-    {
+    { 
  		// Calculate next sample
  		sample = sinegen();
  		
@@ -165,7 +172,8 @@ float sinegen(void)
  	using a look up table instead of a filter.*/
 	
 	// temporary variable used to output values from function
-	float wave;	
+	
+	/*float wave;	
 	
 	// represets the filter coeficients (square root of 2 and 1/square root of 2)
 	float a0 = 1.4142;
@@ -181,7 +189,30 @@ float sinegen(void)
 	wave = y[0];
 			   
     return(wave); 
-    
+    */
+
+	// The counter controls when the iterator can increment  
+	// It can only do so once the counter has reached its limit 
+	// The limit is set based on the 
+	
+	float ratio;
+	ratio = (sine_freq/(float)sampling_freq)*SINE_TABLE_SIZE;
+	
+    if(iterator < (SINE_TABLE_SIZE - ratio))
+    {
+    	if(round(ratio) != ratio)
+    	{
+    		return (table[(int)ceil(ratio)]-table[(int)floor(ratio)])*(ratio-floor(ratio))+floor(ratio);
+    	}
+    	else
+       		iterator += ratio;   
+    }
+    else
+    	iterator = 0;	
+	
+	
+    return table[iterator];  
+ 
 }
 
 /********************************** sine_init() ***************************************/ 
